@@ -6,23 +6,17 @@ import requests
 # Page configuration
 st.set_page_config(page_title="Movie Recommender System", layout="wide")
 
-TMDB_API_KEY = "582f5364190b97eff67367b659b5e9f8"
+# Retrieve key securely from Streamlit Secrets with local fallback
+API_KEY = st.secrets.get("TMDB_API_KEY", "582f5364190b97eff67367b659b5e9f8")
 
 # Helper function to fetch movie poster from TMDB
 @st.cache_data(show_spinner=False, ttl=3600)
 def fetch_poster(movie_id):
-    # Your TMDB API Read Access Token
-    token = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1ODJmNTM2NDE5MGI5N2VmZjY3MzY3YjY1OWI1ZTlmOCIsIm5iZiI6MTc4ODk1NzUxOS4yNDk5OTk4LCJzdWIiOiI2YWExNTM0ZmNkMWI5ZDEzMDc0ZmNjZWEiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.EovoqB6ahah-ikUgQ6ZrRImSzWd5X3VtFrqnw2zi8VM"
-    
-    url = f"https://api.themoviedb.org/3/movie/{movie_id}?language=en-US"
-    headers = {
-        "accept": "application/json",
-        "Authorization": f"Bearer {token}"
-    }
+    url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key={API_KEY}&language=en-US"
     fallback_poster = "https://placehold.co/500x750/png?text=Poster+Not+Found"
 
     try:
-        response = requests.get(url, headers=headers, timeout=5)
+        response = requests.get(url, timeout=5)
         response.raise_for_status()
         poster_path = response.json().get("poster_path")
         if poster_path:
@@ -71,5 +65,4 @@ if st.button("Show Recommendations"):
     for col, name, poster in zip(cols, names, posters):
         with col:
             st.text(name)
-            st.image(poster, width="stretch")
-            
+            st.image(poster, use_container_width=True)
